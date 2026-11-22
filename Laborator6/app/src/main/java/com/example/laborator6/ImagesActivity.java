@@ -1,11 +1,10 @@
 package com.example.laborator6;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.content.Intent;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,119 +19,135 @@ import java.util.concurrent.Executors;
 
 public class ImagesActivity extends AppCompatActivity {
 
-    private ListView lv;
-    private List<ImaginiDomeniu> lista;
+    private List<ImaginiDomeniu> imagini;
+    private ImagineAdapter adapter;
 
-    private Executor executor;
-    private Handler handler;
-
-    private List<String> linkuriImagini;
-    private List<Bitmap> imagini;
+    private Executor executor = Executors.newSingleThreadExecutor();
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_images);
 
-        lv = findViewById(R.id.imagini);
+        ListView listaImagini = findViewById(R.id.imagini);
 
-        lista = new ArrayList<>();
         imagini = new ArrayList<>();
-        linkuriImagini = new ArrayList<>();
 
-        linkuriImagini.add("https://commons.wikimedia.org/wiki/Special:FilePath/Simple_Calculator.jpg");
-        linkuriImagini.add("https://commons.wikimedia.org/wiki/Special:FilePath/A_modern_scientific_calculator.jpeg");
-        linkuriImagini.add("https://commons.wikimedia.org/wiki/Special:FilePath/Graphing_calculator_image.jpg");
-        linkuriImagini.add("https://commons.wikimedia.org/wiki/Special:FilePath/Financial_Calculator_Hewlett-Packard_HP-12C_built_from_1981,_this_item_was_produced_in_1988.jpg");
-        linkuriImagini.add("https://commons.wikimedia.org/wiki/Special:FilePath/HP-12C_programmable_calculator.jpg");
+        imagini.add(new ImaginiDomeniu(
+                "Desktop PC",
+                null,
+                "https://www.lenovo.com/ro/ro/desktops/"
+        ));
 
-        executor = Executors.newSingleThreadExecutor();
-        handler = new Handler(Looper.getMainLooper());
+        imagini.add(new ImaginiDomeniu(
+                "Gaming PC",
+                null,
+                "https://www.lenovo.com/ro/ro/p/desktops/legion-desktops/legion-t-series-towers/lenovo-legion-tower-5i-gen-10-intel/len102g0009"
+        ));
 
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
+        imagini.add(new ImaginiDomeniu(
+                "All-in-One PC",
+                null,
+                "https://www.lenovo.com/ro/ro/c/desktops/thinkcentre/"
+        ));
 
-                for (String link : linkuriImagini) {
+        imagini.add(new ImaginiDomeniu(
+                "Mini PC",
+                null,
+                "https://www.lenovo.com/gb/en/c/desktops/ideacentre/"
+        ));
 
-                    HttpURLConnection con = null;
-                    try {
-                        URL url = new URL(link);
-                        con = (HttpURLConnection) url.openConnection();
+        imagini.add(new ImaginiDomeniu(
+                "Workstation PC",
+                null,
+                "https://www.lenovo.com/ro/ro/p/workstations/thinkstationp/thinkstation-p360-tiny/len102s0005"
+        ));
 
-                        con.setRequestMethod("GET");
-                        con.connect();
+        adapter = new ImagineAdapter(
+                imagini,
+                this,
+                R.layout.image_layout
+        );
 
-                        InputStream is = con.getInputStream();
+        listaImagini.setAdapter(adapter);
 
-                        Bitmap bitmap = BitmapFactory.decodeStream(is);
+        listaImagini.setOnItemClickListener((parent, view, position, id) -> {
+            String link = imagini.get(position).getLink();
 
-                        imagini.add(bitmap);
+            android.content.Intent intent =
+                    new android.content.Intent(ImagesActivity.this, WebViewActivity.class);
 
-                        is.close();
+            intent.putExtra("link", link);
+            startActivity(intent);
+        });
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        imagini.add(null);
-                    } finally {
-                        if (con != null) {
-                            con.disconnect();
-                        }
-                    }
-                }
+        incarcaImagini();
+    }
 
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
+    private void incarcaImagini() {
 
-                        String[] descrieri = {
-                                "Calculator simplu - pentru operatii aritmetice de baza",
-                                "Calculator stiintific - pentru functii matematice avansate",
-                                "Calculator grafic - pentru reprezentarea functiilor",
-                                "Calculator financiar - pentru calcule financiare si dobanzi",
-                                "Calculator programabil - pentru operatii programate"
-                        };
+        String[] linkuriImagini = {
+                "https://s13emagst.akamaized.net/products/144868/144867708/images/res_6d6cc350d9e6ea9808bc7c36dee67ec8.jpg",
+                "https://s13emagst.akamaized.net/products/91018/91017675/images/res_b4b2483e29e502bbc60488aa1228bca3.jpg",
+                "https://www.coreinnovationsinc.com/wp-content/uploads/2024/02/CC2400-1-600x600.jpg",
+                "https://gomagcdn.ro/domains/dualstore.ro/files/product/original/mini-pc-blackview-mp60-negru-4k-60hz-16gb-ram-lpddr4-512gb-rom-ssd-intel-n95-windows-11-pro-display-dual-4k-wi-fi-bt-4-2-copie-1430966093.jpg",
+                "https://www.hp.com/content/dam/sites/worldwide/personal-computers/commercial/workstations/desktop-workstation-pc/z-2-mini-g-9-3.png"
+        };
 
-                        String[] linkuriPagini = {
-                                "https://en.wikipedia.org/wiki/Calculator",
-                                "https://en.wikipedia.org/wiki/Scientific_calculator",
-                                "https://en.wikipedia.org/wiki/Graphing_calculator",
-                                "https://en.wikipedia.org/wiki/Financial_calculator",
-                                "https://en.wikipedia.org/wiki/Programmable_calculator"
-                        };
+        for (int i = 0; i < linkuriImagini.length; i++) {
 
-                        for (int i = 0; i < imagini.size(); i++) {
+            final int pozitie = i;
+            final String link = linkuriImagini[i];
 
-                            if (imagini.get(i) != null) {
+            executor.execute(() -> {
 
-                                lista.add(new ImaginiDomeniu(
-                                        descrieri[i],
-                                        imagini.get(i),
-                                        linkuriPagini[i]
-                                ));
-                            }
-                        }
+                Bitmap bitmap = descarcaImagine(link);
 
-                        ImagineAdapter adapter = new ImagineAdapter(
-                                lista,
-                                ImagesActivity.this,
-                                R.layout.image_layout
-                        );
+                handler.post(() -> {
+                    if (bitmap != null) {
+                        ImaginiDomeniu imagine = imagini.get(pozitie);
 
-                        lv.setAdapter(adapter);
+                        imagini.set(pozitie, new ImaginiDomeniu(
+                                imagine.getTextAfisat(),
+                                bitmap,
+                                imagine.getLink()
+                        ));
 
-                        lv.setOnItemClickListener((parent, view, position, id) -> {
-
-                            Intent intent = new Intent(
-                                    ImagesActivity.this, WebViewActivity.class);
-
-                            intent.putExtra("link", lista.get(position).getLink());
-
-                            startActivity(intent);
-                        });
+                        adapter.notifyDataSetChanged();
                     }
                 });
+            });
+        }
+    }
+
+    private Bitmap descarcaImagine(String link) {
+
+        HttpURLConnection conexiune = null;
+
+        try {
+            URL url = new URL(link);
+            conexiune = (HttpURLConnection) url.openConnection();
+            conexiune.setConnectTimeout(10000);
+            conexiune.setReadTimeout(10000);
+            conexiune.setRequestMethod("GET");
+
+            InputStream input = conexiune.getInputStream();
+
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+
+            input.close();
+
+            return bitmap;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+
+        } finally {
+            if (conexiune != null) {
+                conexiune.disconnect();
             }
-        });
+        }
     }
 }

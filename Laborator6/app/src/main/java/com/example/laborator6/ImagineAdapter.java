@@ -48,7 +48,11 @@ public class ImagineAdapter extends BaseAdapter {
 
         ImaginiDomeniu imagine = imagini.get(i);
 
-        imagineIV.setImageBitmap(imagine.getImagine());
+        if (imagine.getImagine() != null) {
+            imagineIV.setImageBitmap(imagine.getImagine());
+        } else {
+            imagineIV.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
         textAfisatTV.setText(imagine.getTextAfisat());
 
         return v;
